@@ -3,7 +3,7 @@ plugins {
 }
 
 group 'com.atatctech'
-version '1.0-SNAPSHOT'
+version '1.0.0b0'
 
 repositories {
     mavenCentral()
