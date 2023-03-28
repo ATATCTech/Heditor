@@ -5,13 +5,11 @@ import com.atatctech.heditor.pattern.Type;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.hephaestus.export.fs.ComponentFolder;
 import com.atatctech.packages.basics.Basics;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.io.File;
 import java.util.Objects;
 
-public class Heditor {
+public final class Heditor {
     public static final PatternExtractor JAVA = (skeleton, context, type) -> {
         Skeleton currentBranch = skeleton;
         int classDeclarationStartsAt = -1;
@@ -55,11 +53,30 @@ public class Heditor {
 
     public static final PatternExtractor PYTHON = null;
 
+    private static final String HELP_TEXT = """
+            extract [language] [target]
+                    (--type=[comment type])
+                    (--wrapperfile=[custom wrapper file])
+                language: Java / Python
+                target: path to the target file
+                comment type:
+                    md -> Markdown  *DEFAULT
+                    html -> HTML
+                    p -> plain text
+                wrapperfile: path to the wrapper file, `.wrapper` by default
+            """;
+
     public static void main(String[] args) {
-        Logger logger = LogManager.getLogger();
         try {
             int lengthOfArgs = args.length;
-            if (lengthOfArgs < 2) throw new IllegalArgumentException("Must have at least 3 arguments.");
+            if (lengthOfArgs < 2) {
+                if (args[0].equals("help")) {
+                    System.out.println(HELP_TEXT);
+                    return;
+                }
+                throw new IllegalArgumentException("Must have at least 3 arguments.");
+            }
+            String command = args[0].toLowerCase();
             File file = new File(args[lengthOfArgs - 1]);
             String language = args[1].toLowerCase();
             PatternExtractor patternExtractor;
@@ -87,18 +104,20 @@ public class Heditor {
                     outputDir = arg;
                 }
             }
-            switch (args[0].toLowerCase()) {
+            switch (command) {
                 case "extract" -> {
                     Skeleton skeleton = Utils.extract(file, patternExtractor, type);
-                    if (outputDir == null) logger.info(skeleton);
+                    if (outputDir == null) System.out.println(skeleton);
                     else if (outputDir.endsWith(".expr")) Basics.NativeHandler.writeFile(outputDir, skeleton.expr());
                     else
                         (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write("C:\\Users\\futer\\Downloads\\Hephaestus");
                 }
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
+                default -> System.out.println("WARNING: Unrecognized command: `" + command + "`.");
             }
         } catch (Exception e) {
-            logger.error(e);
+            System.out.println("ERROR: " + e);
+            System.out.println("Use `heditor help` to learn more.");
         }
     }
 }

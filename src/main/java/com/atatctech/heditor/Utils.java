@@ -8,7 +8,7 @@ import com.atatctech.packages.basics.Basics;
 import java.io.File;
 import java.io.IOException;
 
-public class Utils {
+public final class Utils {
     public static Component text2component(Text text, Type type) {
         return switch (type) {
             case PLAIN_TEXT -> text;
