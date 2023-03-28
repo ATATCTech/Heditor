@@ -10,48 +10,39 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class Heditor {
-    public static final PatternExtractor JAVA_LEGACY = (skeleton, context, language) -> {
-        int end = 0;
-        for (; ; ) {
-            int start = context.indexOf("/**", end);
-            if (start < 0) return skeleton;
-            end = context.indexOf("*/", start);
-            int parenthesesStart = context.indexOf('(', end);
-            int assigmentStart = context.indexOf('=', end);
-            if (parenthesesStart < 0) parenthesesStart = context.length();
-            if (assigmentStart < 0) assigmentStart = context.length();
-            Skeleton target = new Skeleton(
-                    parenthesesStart < assigmentStart ?
-                            Utils.getTargetNameBackward(context.substring(end, parenthesesStart)) + context.substring(parenthesesStart, context.indexOf(')', parenthesesStart) + 1) :
-                            Utils.getTargetNameBackward(context.substring(end, assigmentStart))
-            );
-            target.setComponent(Utils.text2component(new Text(context.substring(start + 3, end)), language));
-            skeleton.appendChild(target);
-        }
-    };
-
-    // Todo
-    public static final PatternExtractor JAVA = (skeleton, context, language) -> {
+    public static final PatternExtractor JAVA = (skeleton, context, type) -> {
         Skeleton currentBranch = skeleton;
         int classDeclarationStartsAt = -1;
         String javadocBuffer = null;
+        int endOfJavadoc = -1;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
-            if (context.startsWith("class", i)) classDeclarationStartsAt = i + 5;
+            if (context.startsWith("class", i)) {
+                i += 5;
+                classDeclarationStartsAt = i;
+            }
             else if (context.startsWith("/**", i)) {
-                int end = context.indexOf("*/", i + 3);
-                if (end < 0) break;
-                javadocBuffer = context.substring(i + 3, end);
+                endOfJavadoc = context.indexOf("*/", i + 3);
+                if (endOfJavadoc < 0) break;
+                javadocBuffer = context.substring(i + 3, endOfJavadoc);
+                i = endOfJavadoc;
             }
             else if (c == '{') {
-                javadocBuffer = null;
-                if (classDeclarationStartsAt > 0) {
-                    Text.IndexPair indexPair = Utils.getTargetName(context, classDeclarationStartsAt);
-                    if (indexPair == null) break;
-                    i += indexPair.end();
+                if (javadocBuffer != null) {
+                    Text.IndexPair indexPair;
+                    if (classDeclarationStartsAt > 0) {
+                        indexPair = Utils.getClassName(context, classDeclarationStartsAt);
+                        if (indexPair == null) break;
+                        classDeclarationStartsAt = -1;
+                    } else {
+                        indexPair = Utils.getMethodName(context, endOfJavadoc, i);
+                        if (indexPair == null) continue;
+                    }
                     Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
+                    newSkeleton.setComponent(Utils.text2component(new Text(javadocBuffer), type));
                     currentBranch.appendChild(newSkeleton);
                     currentBranch = skeleton;
+                    javadocBuffer = null;
                 }
             } else if (c == '}') {
                 currentBranch = Objects.requireNonNullElse(currentBranch.getParent(), currentBranch);
@@ -72,12 +63,12 @@ public class Heditor {
         switch (language) {
             case "java" -> patternExtractor = JAVA;
             case "python" -> patternExtractor = PYTHON;
-            default -> throw new RuntimeException("Unexpected language \"" + language + "\".");
+            default -> throw new RuntimeException("Unexpected type \"" + language + "\".");
         }
         switch (action) {
             case "extract" -> {
                 Skeleton skeleton = Utils.extract(file, patternExtractor, Type.MARKDOWN);
-                new ComponentFolder(skeleton).write("F:\\Hephaestus");
+                new ComponentFolder(skeleton).write("C:\\Users\\futer\\Downloads\\Hephaestus");
                 System.out.println(skeleton);
             }
             case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");

@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b868fc20-0b18-498f-bb7c-7bd8d4bae88a" name="Changes" comment="Routine updates.">
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/atatctech/heditor/Test.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/atatctech/heditor/Heditor.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/atatctech/heditor/Heditor.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/atatctech/heditor/Utils.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/atatctech/heditor/Utils.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/atatctech/packages/basics/Basics.java" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +67,7 @@
     <configuration name="Heditor" type="Application" factoryName="Application" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="com.atatctech.heditor.Heditor" />
       <module name="Heditor.main" />
-      <option name="PROGRAM_PARAMETERS" value="extract JAVA F:\Projects\Projects\Hephaestus\Heditor\src\test\java\com\atatctech\heditor\Test.java" />
+      <option name="PROGRAM_PARAMETERS" value="extract JAVA src\test\java\com\atatctech\heditor\Test.java" />
       <extension name="coverage">
         <pattern>
           <option name="PATTERN" value="com.atatctech.heditor.*" />
@@ -136,6 +136,11 @@
           <url>jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.atatctech/hephaestus/1.0.1b3/1c58f234943ea1f149ca640bbac965dcbd97dad/hephaestus-1.0.1b3-sources.jar!/com/atatctech/hephaestus/export/fs/ComponentFolder.java</url>
           <line>42</line>
           <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/main/java/com/atatctech/packages/basics/Basics.java</url>
+          <line>19</line>
+          <option name="timeStamp" value="5" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>

@@ -17,23 +17,22 @@ public class Utils {
         };
     }
 
-    public static String getTargetNameBackward(String context, int fromIndex) {
+    public static Text.IndexPair getMethodName(String context, int fromIndex, int toIndex) {
         int end = 0;
-        for (int i = fromIndex; i > 0; i--) {
+        boolean triggered = false;
+        for (int i = toIndex; i > fromIndex; i--) {
             char c = context.charAt(i - 1);
-            if (end < 1) {
-                if (Character.isLetterOrDigit(c)) end += i;
-            }
-            else if (c == ' ') return context.substring(i, end);
+            if (triggered) {
+                if (Character.isLetterOrDigit(c)) {
+                    if (end < 1) end += i;
+                }
+                else if (end >= 1) return new Text.IndexPair(i, end);
+            } else if (c == '(') triggered = true;
         }
         return null;
     }
 
-    public static String getTargetNameBackward(String context) {
-        return getTargetNameBackward(context, context.length());
-    }
-
-    public static Text.IndexPair getTargetName(String context, int fromIndex) {
+    public static Text.IndexPair getClassName(String context, int fromIndex) {
         int start = -1;
         for (int i = fromIndex; i < context.length(); i++) {
             char c = context.charAt(i);
