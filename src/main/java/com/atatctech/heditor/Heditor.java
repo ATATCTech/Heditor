@@ -41,7 +41,7 @@ public class Heditor {
                     Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
                     newSkeleton.setComponent(Utils.text2component(new Text(javadocBuffer), type));
                     currentBranch.appendChild(newSkeleton);
-                    currentBranch = skeleton;
+                    currentBranch = newSkeleton;
                     javadocBuffer = null;
                 }
             } else if (c == '}') {
