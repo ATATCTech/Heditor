@@ -17,14 +17,30 @@ public class Utils {
         };
     }
 
-    public static String getTargetName(String context) {
+    public static String getTargetNameBackward(String context, int fromIndex) {
         int end = 0;
-        for (int i = context.length(); i > 0; i--) {
+        for (int i = fromIndex; i > 0; i--) {
             char c = context.charAt(i - 1);
             if (end < 1) {
                 if (Character.isLetterOrDigit(c)) end += i;
             }
             else if (c == ' ') return context.substring(i, end);
+        }
+        return null;
+    }
+
+    public static String getTargetNameBackward(String context) {
+        return getTargetNameBackward(context, context.length());
+    }
+
+    public static Text.IndexPair getTargetName(String context, int fromIndex) {
+        int start = -1;
+        for (int i = fromIndex; i < context.length(); i++) {
+            char c = context.charAt(i);
+            if (Character.isLetterOrDigit(c)) {
+                if (start < 0) start = i;
+            }
+            else if (start >= 0) return new Text.IndexPair(start, i);
         }
         return null;
     }
