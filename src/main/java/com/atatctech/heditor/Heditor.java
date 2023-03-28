@@ -4,6 +4,7 @@ import com.atatctech.heditor.pattern.PatternExtractor;
 import com.atatctech.heditor.pattern.Type;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.hephaestus.export.fs.ComponentFolder;
+import com.atatctech.packages.basics.Basics;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,20 +57,39 @@ public class Heditor {
     public static void main(String[] args) throws IOException {
         int lengthOfArgs = args.length;
         if (lengthOfArgs < 2) throw new IllegalArgumentException("Must have at least 3 arguments.");
-        String action = args[0].toLowerCase();
-        String language = args[1].toLowerCase();
         File file = new File(args[lengthOfArgs - 1]);
+        String language = args[1].toLowerCase();
         PatternExtractor patternExtractor;
+        Type type = Type.MARKDOWN;
+        String outputDir = null;
+        File wrapperFile = null;
         switch (language) {
             case "java" -> patternExtractor = JAVA;
             case "python" -> patternExtractor = PYTHON;
-            default -> throw new RuntimeException("Unexpected type \"" + language + "\".");
+            default -> throw new RuntimeException("Unexpected language: \"" + language + "\".");
         }
-        switch (action) {
+        for (int i = 2; i < lengthOfArgs; i++) {
+            String arg = args[i];
+            if (arg.startsWith("--type=")) {
+                String typeString = arg.substring(7);
+                type = switch (typeString) {
+                    case "md" -> Type.MARKDOWN;
+                    case "html" -> Type.HTML;
+                    case "p" -> Type.PLAIN_TEXT;
+                    default -> throw new RuntimeException("Unknown type: \"" + typeString + "\".");
+                };
+            } else if (arg.startsWith("--wrapperfile=")) {
+                wrapperFile = new File(arg.substring(14));
+            } else {
+                outputDir = arg;
+            }
+        }
+        switch (args[0].toLowerCase()) {
             case "extract" -> {
-                Skeleton skeleton = Utils.extract(file, patternExtractor, Type.MARKDOWN);
-                new ComponentFolder(skeleton).write("C:\\Users\\futer\\Downloads\\Hephaestus");
-                System.out.println(skeleton);
+                Skeleton skeleton = Utils.extract(file, patternExtractor, type);
+                if (outputDir == null) System.out.println(skeleton);
+                else if (outputDir.endsWith(".expr")) Basics.NativeHandler.writeFile(outputDir, skeleton.expr());
+                else (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write("C:\\Users\\futer\\Downloads\\Hephaestus");
             }
             case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
         }
