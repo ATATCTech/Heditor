@@ -31,13 +31,9 @@ public final class Heditor {
                 if (javadocBuffer != null) {
                     Text.IndexPair indexPair;
                     if (classDeclarationStartsAt > 0) {
-                        indexPair = Utils.getClassName(context, classDeclarationStartsAt);
-                        if (indexPair == null) break;
+                        if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
                         classDeclarationStartsAt = -1;
-                    } else {
-                        indexPair = Utils.getMethodName(context, endOfJavadoc, i);
-                        if (indexPair == null) continue;
-                    }
+                    } else if ((indexPair = Utils.getMethodName(context, endOfJavadoc, i)) == null && (indexPair = Utils.getFieldName()) == null) continue;
                     Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
                     newSkeleton.setComponent(Utils.text2component(new Text(javadocBuffer), type));
                     currentBranch.appendChild(newSkeleton);
@@ -88,7 +84,7 @@ public final class Heditor {
                 case "python" -> patternExtractor = PYTHON;
                 default -> throw new IllegalArgumentException("Unexpected language: \"" + language + "\".");
             }
-            for (int i = 2; i < lengthOfArgs; i++) {
+            for (int i = 3; i < lengthOfArgs; i++) {
                 String arg = args[i];
                 if (arg.startsWith("--type=")) {
                     String typeString = arg.substring(7);

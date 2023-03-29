@@ -44,6 +44,10 @@ public final class Utils {
         return null;
     }
 
+    public static Text.IndexPair getFieldName() {
+        return null;
+    }
+
     public static Skeleton extract(File file, PatternExtractor patternExtractor, Type type) throws IOException {
         if (file.isDirectory()) {
             Skeleton skeleton = new Skeleton(file.getName());
