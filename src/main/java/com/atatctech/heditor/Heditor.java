@@ -22,24 +22,22 @@ public final class Heditor {
                 classDeclarationStartsAt = i;
             }
             else if (context.startsWith("/**", i)) {
-                endOfJavadoc = context.indexOf("*/", i + 3);
-                if (endOfJavadoc < 0) break;
+                if ((endOfJavadoc = context.indexOf("*/", i + 3)) < 0) break;
                 javadocBuffer = context.substring(i + 3, endOfJavadoc);
                 i = endOfJavadoc;
             }
-            else if (c == '{') {
-                if (javadocBuffer != null) {
-                    Text.IndexPair indexPair;
-                    if (classDeclarationStartsAt > 0) {
-                        if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
-                        classDeclarationStartsAt = -1;
-                    } else if ((indexPair = Utils.getMethodName(context, endOfJavadoc, i)) == null && (indexPair = Utils.getFieldName()) == null) continue;
-                    Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
-                    newSkeleton.setComponent(Utils.text2component(new Text(javadocBuffer), type));
-                    currentBranch.appendChild(newSkeleton);
-                    currentBranch = newSkeleton;
-                    javadocBuffer = null;
-                }
+            else if (c == '{' || c == '=') {
+                if (javadocBuffer == null) continue;
+                Text.IndexPair indexPair;
+                if (classDeclarationStartsAt > 0) {
+                    if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
+                    classDeclarationStartsAt = -1;
+                } else if ((indexPair = Utils.getMethodName(context, endOfJavadoc, i)) == null && (indexPair = Utils.getFieldName(context, endOfJavadoc, i + 1)) == null) continue;
+                Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
+                newSkeleton.setComponent(Utils.text2component(new Text(javadocBuffer), type));
+                currentBranch.appendChild(newSkeleton);
+                currentBranch = newSkeleton;
+                javadocBuffer = null;
             } else if (c == '}') {
                 currentBranch = Objects.requireNonNullElse(currentBranch.getParent(), currentBranch);
             }

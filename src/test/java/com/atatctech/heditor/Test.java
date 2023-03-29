@@ -9,6 +9,10 @@ public class Test {
      */
     public class SubClass {
         /**
+         * This is a field
+         */
+        public static final String ABC = "ABC";
+        /**
          * Method A under Test.SubClass
          */
         public void methodA() {}

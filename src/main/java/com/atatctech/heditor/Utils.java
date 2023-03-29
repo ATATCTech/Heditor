@@ -4,6 +4,7 @@ import com.atatctech.heditor.pattern.Type;
 import com.atatctech.heditor.pattern.PatternExtractor;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.packages.basics.Basics;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public final class Utils {
         };
     }
 
-    public static Text.IndexPair getMethodName(String context, int fromIndex, int toIndex) {
+    static Text.@Nullable IndexPair getTargetName(String context, int fromIndex, int toIndex, char trigger) {
         int end = 0;
         boolean triggered = false;
         for (int i = toIndex; i > fromIndex; i--) {
@@ -27,14 +28,22 @@ public final class Utils {
                     if (end < 1) end += i;
                 }
                 else if (end >= 1) return new Text.IndexPair(i, end);
-            } else if (c == '(') triggered = true;
+            } else if (c == trigger) triggered = true;
         }
         return null;
     }
 
-    public static Text.IndexPair getClassName(String context, int fromIndex) {
+    public static Text.IndexPair getMethodName(String context, int fromIndex, int toIndex) {
+        return getTargetName(context, fromIndex, toIndex, '(');
+    }
+
+    public static Text.IndexPair getFieldName(String context, int fromIndex, int toIndex) {
+        return getTargetName(context, fromIndex, toIndex, '=');
+    }
+
+    public static Text.IndexPair getClassName(String context, int fromIndex, int toIndex) {
         int start = -1;
-        for (int i = fromIndex; i < context.length(); i++) {
+        for (int i = fromIndex; i < toIndex; i++) {
             char c = context.charAt(i);
             if (Character.isLetterOrDigit(c)) {
                 if (start < 0) start = i;
@@ -44,8 +53,8 @@ public final class Utils {
         return null;
     }
 
-    public static Text.IndexPair getFieldName() {
-        return null;
+    public static Text.IndexPair getClassName(String context, int fromIndex) {
+        return getClassName(context, fromIndex, context.length());
     }
 
     public static Skeleton extract(File file, PatternExtractor patternExtractor, Type type) throws IOException {
