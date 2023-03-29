@@ -38,9 +38,7 @@ public final class Heditor {
                 currentBranch.appendChild(newSkeleton);
                 currentBranch = newSkeleton;
                 javadocBuffer = null;
-            } else if (c == '}') {
-                currentBranch = Objects.requireNonNullElse(currentBranch.getParent(), currentBranch);
-            }
+            } else if (c == '}') currentBranch = Objects.requireNonNullElse(currentBranch.getParent(), currentBranch);
         }
         return skeleton;
     };
@@ -51,13 +49,18 @@ public final class Heditor {
             extract [language] [target]
                     (--type=[comment type])
                     (--wrapperfile=[custom wrapper file])
+                    ([output path])
                 language: Java / Python
                 target: path to the target file
                 comment type:
                     md -> Markdown  *DEFAULT
                     html -> HTML
                     p -> plain text
-                wrapperfile: path to the wrapper file, `.wrapper` by default
+                custom wrapper file: path to the wrapper file, `.wrapper` by default
+                output path: path to output
+                    By filling this argument, Heditor will save the result into a file.
+                    If path ends with ".hexpr", the result will be saved in form of Hexpr.
+                    If not, the result will be unpacked into directories and files.
             """;
 
     public static void main(String[] args) {
@@ -71,11 +74,11 @@ public final class Heditor {
                 throw new IllegalArgumentException("Must have at least 3 arguments.");
             }
             String command = args[0].toLowerCase();
-            File file = new File(args[lengthOfArgs - 1]);
+            File file = new File(args[2]);
             String language = args[1].toLowerCase();
             PatternExtractor patternExtractor;
             Type type = Type.MARKDOWN;
-            String outputDir = null;
+            File outputFile = null;
             File wrapperFile = null;
             switch (language) {
                 case "java" -> patternExtractor = JAVA;
@@ -95,16 +98,16 @@ public final class Heditor {
                 } else if (arg.startsWith("--wrapperfile=")) {
                     wrapperFile = new File(arg.substring(14));
                 } else {
-                    outputDir = arg;
+                    outputFile = new File(arg);
                 }
             }
             switch (command) {
                 case "extract" -> {
                     Skeleton skeleton = Utils.extract(file, patternExtractor, type);
-                    if (outputDir == null) System.out.println(skeleton);
-                    else if (outputDir.endsWith(".expr")) Basics.NativeHandler.writeFile(outputDir, skeleton.expr());
+                    if (outputFile == null) System.out.println(skeleton);
+                    else if (outputFile.getName().endsWith(".expr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
                     else
-                        (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write("C:\\Users\\futer\\Downloads\\Hephaestus");
+                        (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write(outputFile + "/" + skeleton.getName());
                 }
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
                 default -> System.out.println("WARNING: Unrecognized command: `" + command + "`.");

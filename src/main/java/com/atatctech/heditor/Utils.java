@@ -4,13 +4,14 @@ import com.atatctech.heditor.pattern.Type;
 import com.atatctech.heditor.pattern.PatternExtractor;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.packages.basics.Basics;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 
 public final class Utils {
-    public static Component text2component(Text text, Type type) {
+    public static Component text2component(Text text, @NotNull Type type) {
         return switch (type) {
             case PLAIN_TEXT -> text;
             case MARKDOWN -> new MDBlock(text);
@@ -41,7 +42,7 @@ public final class Utils {
         return getTargetName(context, fromIndex, toIndex, '=');
     }
 
-    public static Text.IndexPair getClassName(String context, int fromIndex, int toIndex) {
+    public static Text.@Nullable IndexPair getClassName(String context, int fromIndex, int toIndex) {
         int start = -1;
         for (int i = fromIndex; i < toIndex; i++) {
             char c = context.charAt(i);
@@ -57,7 +58,7 @@ public final class Utils {
         return getClassName(context, fromIndex, context.length());
     }
 
-    public static Skeleton extract(File file, PatternExtractor patternExtractor, Type type) throws IOException {
+    public static Skeleton extract(@NotNull File file, PatternExtractor patternExtractor, Type type) throws IOException {
         if (file.isDirectory()) {
             Skeleton skeleton = new Skeleton(file.getName());
             File[] children = file.listFiles();
