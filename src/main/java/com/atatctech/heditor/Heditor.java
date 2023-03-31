@@ -126,7 +126,7 @@ public final class Heditor {
                 case "extract" -> {
                     Skeleton skeleton = Utils.extract(file, commentExtractor, type, styler);
                     if (outputFile == null) System.out.println(skeleton);
-                    else if (outputFile.getName().endsWith(".expr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
+                    else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
                     else
                         (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write(outputFile + "/" + skeleton.getName());
                 }
