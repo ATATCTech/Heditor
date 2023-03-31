@@ -85,7 +85,7 @@ public final class Heditor {
             switch (language) {
                 case "java" -> commentExtractor = JAVA;
                 case "python" -> commentExtractor = PYTHON;
-                default -> throw new IllegalArgumentException("Unexpected language: \"" + language + "\".");
+                default -> throw new IllegalStateException("Unexpected language: \"" + language + "\".");
             }
             for (int i = 3; i < lengthOfArgs; i++) {
                 String arg = args[i];
@@ -95,7 +95,7 @@ public final class Heditor {
                         case "md" -> Type.MARKDOWN;
                         case "html" -> Type.HTML;
                         case "p" -> Type.PLAIN_TEXT;
-                        default -> throw new IllegalArgumentException("Unknown type: \"" + typeString + "\".");
+                        default -> throw new IllegalStateException("Unknown type: \"" + typeString + "\".");
                     };
                 } else if (arg.startsWith("--wrapperfile=")) {
                     wrapperFile = new File(arg.substring(14));
