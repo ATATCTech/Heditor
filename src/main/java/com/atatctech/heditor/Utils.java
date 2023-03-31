@@ -1,7 +1,8 @@
 package com.atatctech.heditor;
 
+import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
-import com.atatctech.heditor.pattern.PatternExtractor;
+import com.atatctech.heditor.pattern.CommentExtractor;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.packages.basics.Basics;
 import org.jetbrains.annotations.NotNull;
@@ -17,6 +18,26 @@ public final class Utils {
             case MARKDOWN -> new MDBlock(text);
             case HTML -> new HTMLBlock(text);
         };
+    }
+
+    public static @NotNull String removeRedundantCharacters(@NotNull String s, char c) {
+        StringBuilder r = new StringBuilder();
+        for (int i = 0; i < s.length(); i++) {
+            char chr = s.charAt(i);
+            if (chr != c) {
+                if (Character.isLetterOrDigit(chr)) return r + s.substring(i);
+                r.append(chr);
+            }
+        }
+        return r.toString();
+    }
+
+    public static @NotNull String removeRedundantCharactersByLines(@NotNull String s, char c) {
+        String lineSeparator = System.lineSeparator();
+        String[] lines = s.split(lineSeparator);
+        StringBuilder r = new StringBuilder();
+        for (String line : lines) r.append(removeRedundantCharacters(line, c)).append(lineSeparator);
+        return r.toString();
     }
 
     static Text.@Nullable IndexPair getTargetName(String context, int fromIndex, int toIndex, char trigger) {
@@ -58,14 +79,14 @@ public final class Utils {
         return getClassName(context, fromIndex, context.length());
     }
 
-    public static Skeleton extract(@NotNull File file, PatternExtractor patternExtractor, Type type) throws IOException {
+    public static Skeleton extract(@NotNull File file, CommentExtractor commentExtractor, Type type, Styler styler) throws IOException {
         if (file.isDirectory()) {
             Skeleton skeleton = new Skeleton(file.getName());
             File[] children = file.listFiles();
-            if (children != null) for (File subFile : children) skeleton.appendChild(extract(subFile, patternExtractor, type));
+            if (children != null) for (File subFile : children) skeleton.appendChild(extract(subFile, commentExtractor, type, styler));
             return skeleton;
         }
         String content = Basics.NativeHandler.readFile(file);
-        return patternExtractor.extract(new Skeleton(file.getName()), content, type);
+        return commentExtractor.extract(new Skeleton(file.getName()), content, type, styler);
     }
 }
