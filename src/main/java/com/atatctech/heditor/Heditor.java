@@ -51,7 +51,7 @@ public final class Heditor {
                     (--type=[comment type])
                     (--wrapperfile=[custom wrapper file])
                     ([output path])
-                language: Java / Python
+                language: Java | Python
                 target: path to the target file
                 comment type:
                     md -> Markdown  *DEFAULT
