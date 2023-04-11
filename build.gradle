@@ -21,11 +21,7 @@ test {
 }
 
 jar {
-    jar.enabled(true)
-    manifestContentCharset 'utf-8'
-    metadataCharset 'utf-8'
-    archivesBaseName = 'heditor'
     manifest {
-        attributes "Manifest-Version": 1.0, 'Start-Class': 'com.atatctech.heditor.Heditor'
+        attributes 'Main-Class': 'com.atatctech.heditor.Heditor'
     }
 }
