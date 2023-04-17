@@ -13,9 +13,8 @@ import java.util.Objects;
 public final class Heditor {
     public static final CommentExtractor JAVA = (skeleton, context, type, styler) -> {
         Skeleton currentBranch = skeleton;
-        int classDeclarationStartsAt = -1;
+        int classDeclarationStartsAt = -1, endOfJavadoc = -1;
         String javadocBuffer = null;
-        int endOfJavadoc = -1;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
             if (context.startsWith("class", i)) {
@@ -27,8 +26,7 @@ public final class Heditor {
                 javadocBuffer = context.substring(i + 3, endOfJavadoc);
                 i = endOfJavadoc;
             }
-            else if (c == '{' || c == '=') {
-                if (javadocBuffer == null) continue;
+            else if ((c == '{' || c == '=') && javadocBuffer != null) {
                 Text.IndexPair indexPair;
                 if (classDeclarationStartsAt > 0) {
                     if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
@@ -44,7 +42,35 @@ public final class Heditor {
         return skeleton;
     };
 
-    public static final CommentExtractor PYTHON = null;
+    public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
+        Skeleton currentBranch = skeleton;
+        int classDeclarationStartsAt = -1, functionDeclarationStartsAt = -1;
+        Text.IndexPair indexPair = null;
+        for (int i = 0; i < context.length(); i++) {
+            if (context.startsWith("class", i)) {
+                i += 5;
+                classDeclarationStartsAt = i;
+            } else if (context.startsWith("def", i)) {
+                i += 3;
+                functionDeclarationStartsAt = i;
+            } else if (context.charAt(i) == ':') {
+                indexPair = null;
+                if (classDeclarationStartsAt > 0) indexPair = Utils.getClassName(context, classDeclarationStartsAt, i);
+                if (indexPair == null && functionDeclarationStartsAt > 0) indexPair = Utils.getMethodName(context, functionDeclarationStartsAt, i);
+            } else if (indexPair != null && context.startsWith("\"\"\"", i)) {
+                int endOfDocstring;
+                if ((endOfDocstring = context.indexOf("\"\"\"", i + 3)) < 0) break;
+                Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
+                newSkeleton.setComponent(Utils.text2component(styler.transform(newSkeleton, Utils.removeRedundantCharactersByLines(context.substring(i + 3, endOfDocstring), ' '), type), type));
+                currentBranch.appendChild(newSkeleton);
+                currentBranch = newSkeleton;
+                indexPair = null;
+                classDeclarationStartsAt = functionDeclarationStartsAt = -1;
+                i = endOfDocstring;
+            }
+        }
+        return skeleton;
+    };
 
     private static final String HELP_TEXT = """
             extract [language] [target]
@@ -136,6 +162,7 @@ public final class Heditor {
         } catch (Exception e) {
             System.out.println("ERROR: " + e);
             System.out.println("Use `heditor help` to learn more.");
+            throw new RuntimeException(e);
         }
     }
 }
