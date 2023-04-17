@@ -132,13 +132,17 @@ public final class Heditor {
                             public Text transform(Skeleton currentContainer, String comment, Type type) {
                                 return super.transform(currentContainer, comment
                                         .replaceAll("@param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
-                                        .replaceAll("@return", "<b style='font-size:10px;color:green;'>RETURN</b>"), type);
+                                        .replaceAll("@return", "<b style='font-size:10px;color:green;'>RETURN</b>")
+                                        , type);
                             }
                         };
                         case 1 -> new Styler() {
                             @Override
                             public Text transform(Skeleton currentContainer, String comment, Type type) {
-                                return super.transform(currentContainer, comment, type);
+                                return super.transform(currentContainer, comment
+                                        .replaceAll(":param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
+                                        .replaceAll(":return", "<b style='font-size:10px;color:green;'>RETURN</b>")
+                                        , type);
                             }
                         };
                         default ->
