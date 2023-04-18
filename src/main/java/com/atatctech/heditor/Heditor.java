@@ -42,6 +42,7 @@ public final class Heditor {
         return skeleton;
     };
 
+    // FixMe: 需要通过缩进判断层级关系
     public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
         Skeleton currentBranch = skeleton;
         int classDeclarationStartsAt = -1, functionDeclarationStartsAt = -1;
@@ -57,13 +58,13 @@ public final class Heditor {
                 indexPair = null;
                 if (classDeclarationStartsAt > 0) indexPair = Utils.getClassName(context, classDeclarationStartsAt, i);
                 if (indexPair == null && functionDeclarationStartsAt > 0) indexPair = Utils.getMethodName(context, functionDeclarationStartsAt, i);
+                Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
+                currentBranch.appendChild(newSkeleton);
+                currentBranch = newSkeleton;
             } else if (indexPair != null && context.startsWith("\"\"\"", i)) {
                 int endOfDocstring;
                 if ((endOfDocstring = context.indexOf("\"\"\"", i + 3)) < 0) break;
-                Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
-                newSkeleton.setComponent(Utils.text2component(styler.transform(newSkeleton, Utils.removeRedundantCharactersByLines(context.substring(i + 3, endOfDocstring), ' '), type), type));
-                currentBranch.appendChild(newSkeleton);
-                currentBranch = newSkeleton;
+                currentBranch.setComponent(Utils.text2component(styler.transform(currentBranch, Utils.removeRedundantCharactersByLines(context.substring(i + 3, endOfDocstring), ' '), type), type));
                 indexPair = null;
                 classDeclarationStartsAt = functionDeclarationStartsAt = -1;
                 i = endOfDocstring;
