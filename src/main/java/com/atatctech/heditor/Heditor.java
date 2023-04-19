@@ -42,32 +42,46 @@ public final class Heditor {
     };
 
     public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
-        PythonTarget currentBranch = (PythonTarget) skeleton;
+        PythonTarget currentBranch = new PythonTarget(skeleton);
+        skeleton = currentBranch;
         String lineSeparator = System.lineSeparator();
         int currentIndentation = 0, declarationStartsAt = -1;
-        boolean newLine = false, declarationIsClass = true;
+        boolean newLine = false, declarationIsClass = true, indentationDetectionRequested = false, indentationDetection = false;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
             if (context.startsWith(lineSeparator, i)) {
                 currentIndentation = 0;
                 newLine = true;
+                indentationDetection = indentationDetectionRequested;
+                indentationDetectionRequested = false;
+                i += lineSeparator.length() - 1;
             } else if (newLine) {
                 if (c == ' ') currentIndentation++;
                 else {
                     newLine = false;
-                    PythonTarget parent = currentBranch.getParent();
-                    if (currentIndentation == parent.getIndentation()) currentBranch = parent;
+                    if (indentationDetection) {
+                        currentBranch.setIndentation(currentIndentation);
+                        indentationDetection = false;
+                    }
+                    if (currentIndentation < currentBranch.getIndentation()) {
+                        PythonTarget parent = currentBranch.getParent();
+                        while (parent != null) {
+                            if (currentIndentation == parent.getIndentation()) currentBranch = parent;
+                            else parent = parent.getParent();
+                        }
+                    }
                 }
-            } else {
+            }
+            if (!newLine) {
                 if (c == ':' && declarationStartsAt > 0) {
                     Text.IndexPair indexPair = declarationIsClass ? Utils.getClassName(context, declarationStartsAt, i) : Utils.getMethodName(context, declarationStartsAt, i);
-                    if (indexPair == null) {
-                        declarationStartsAt = -1;
-                        continue;
+                    if (indexPair != null) {
+                        PythonTarget newSkeleton = new PythonTarget(context.substring(indexPair.start(), indexPair.end()));
+                        currentBranch.appendChild(newSkeleton);
+                        currentBranch = newSkeleton;
+                        indentationDetectionRequested = true;
                     }
-                    PythonTarget newSkeleton = new PythonTarget(context.substring(indexPair.start(), indexPair.end()), currentIndentation);
-                    currentBranch.appendChild(newSkeleton);
-                    currentBranch = newSkeleton;
+                    declarationStartsAt = -1;
                 } else if (context.startsWith("class", i)) {
                     declarationStartsAt = i += 5;
                     declarationIsClass = true;
