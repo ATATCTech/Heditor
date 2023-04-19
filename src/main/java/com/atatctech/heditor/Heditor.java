@@ -13,7 +13,7 @@ import java.util.Objects;
 public final class Heditor {
     public static final CommentExtractor JAVA = (skeleton, context, type, styler) -> {
         Skeleton currentBranch = skeleton;
-        int classDeclarationStartsAt = -1, endOfJavadoc = -1;
+        int classDeclarationStartsAt = -1, JavadocEndsAt = -1;
         String javadocBuffer = null;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
@@ -21,18 +21,18 @@ public final class Heditor {
                 classDeclarationStartsAt = i += 5;
             }
             else if (context.startsWith("/**", i)) {
-                if ((endOfJavadoc = context.indexOf("*/", i += 3)) < 0) break;
-                javadocBuffer = context.substring(i, endOfJavadoc);
-                i = endOfJavadoc;
+                if ((JavadocEndsAt = context.indexOf("*/", i += 3)) < 0) break;
+                javadocBuffer = context.substring(i, JavadocEndsAt);
+                i = JavadocEndsAt;
             }
             else if (javadocBuffer != null && (c == '{' || c == '=')) {
                 Text.IndexPair indexPair;
                 if (classDeclarationStartsAt > 0) {
                     if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
                     classDeclarationStartsAt = -1;
-                } else if ((indexPair = Utils.getMethodName(context, endOfJavadoc, i)) == null && (indexPair = Utils.getFieldName(context, endOfJavadoc, i + 1)) == null) continue;
+                } else if ((indexPair = Utils.getMethodName(context, JavadocEndsAt, i)) == null && (indexPair = Utils.getFieldName(context, JavadocEndsAt, i + 1)) == null) continue;
                 Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
-                newSkeleton.setComponent(Utils.text2component(styler.transform(newSkeleton, Utils.removeRedundantCharactersByLines(Utils.removeRedundantCharactersByLines(javadocBuffer, '*'), ' '), type), type));
+                newSkeleton.setComponent(Utils.text2component(styler.transform(newSkeleton, Utils.removeRedundantCharactersByLines(javadocBuffer, '*', ' '), type), type));
                 currentBranch.appendChild(newSkeleton);
                 currentBranch = newSkeleton;
                 javadocBuffer = null;
@@ -41,21 +41,23 @@ public final class Heditor {
         return skeleton;
     };
 
-    // FixMe: record indentation info in skeleton, should be implemented using a subclass of skeleton
     public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
-        Skeleton currentBranch = skeleton;
+        PythonTarget currentBranch = (PythonTarget) skeleton;
         String lineSeparator = System.lineSeparator();
-        int lastIndentation = 0, currentIndentation = 0, declarationStartsAt = -1;
+        int currentIndentation = 0, declarationStartsAt = -1;
         boolean newLine = false, declarationIsClass = true;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
             if (context.startsWith(lineSeparator, i)) {
                 currentIndentation = 0;
                 newLine = true;
-            }
-            if (newLine) {
+            } else if (newLine) {
                 if (c == ' ') currentIndentation++;
-                else newLine = false;
+                else {
+                    newLine = false;
+                    PythonTarget parent = currentBranch.getParent();
+                    if (currentIndentation == parent.getIndentation()) currentBranch = parent;
+                }
             } else {
                 if (c == ':' && declarationStartsAt > 0) {
                     Text.IndexPair indexPair = declarationIsClass ? Utils.getClassName(context, declarationStartsAt, i) : Utils.getMethodName(context, declarationStartsAt, i);
@@ -63,16 +65,19 @@ public final class Heditor {
                         declarationStartsAt = -1;
                         continue;
                     }
-                    Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
-                    lastIndentation = currentIndentation;
-                }
-                else if (context.startsWith("class", i)) {
+                    PythonTarget newSkeleton = new PythonTarget(context.substring(indexPair.start(), indexPair.end()), currentIndentation);
+                    currentBranch.appendChild(newSkeleton);
+                    currentBranch = newSkeleton;
+                } else if (context.startsWith("class", i)) {
                     declarationStartsAt = i += 5;
                     declarationIsClass = true;
-                }
-                else if (context.startsWith("def", i)) {
+                } else if (context.startsWith("def", i)) {
                     declarationStartsAt = i += 3;
                     declarationIsClass = false;
+                } else if (context.startsWith("\"\"\"", i)) {
+                    int docstringEndsAt = context.indexOf("\"\"\"", i += 3);
+                    currentBranch.setComponent(Utils.text2component(styler.transform(currentBranch, Utils.removeRedundantCharactersByLines(context.substring(i, docstringEndsAt), ' '), type), type));
+                    i = docstringEndsAt;
                 }
             }
         }

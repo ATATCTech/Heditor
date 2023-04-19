@@ -20,7 +20,7 @@ public final class Utils {
         };
     }
 
-    public static @NotNull String removeRedundantCharacters(@NotNull String s, char c) {
+    public static @NotNull String removeRedundantCharacter(@NotNull String s, char c) {
         StringBuilder r = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             char chr = s.charAt(i);
@@ -32,12 +32,17 @@ public final class Utils {
         return r.toString();
     }
 
-    public static @NotNull String removeRedundantCharactersByLines(@NotNull String s, char c) {
+    public static @NotNull String removeRedundantCharacterByLines(@NotNull String s, char c) {
         String lineSeparator = System.lineSeparator();
         String[] lines = s.split(lineSeparator);
         StringBuilder r = new StringBuilder();
-        for (String line : lines) r.append(removeRedundantCharacters(line, c)).append(lineSeparator);
+        for (String line : lines) r.append(removeRedundantCharacter(line, c)).append(lineSeparator);
         return r.toString();
+    }
+
+    public static @NotNull String removeRedundantCharactersByLines(@NotNull String s, char... cs) {
+        for (char c : cs) s = removeRedundantCharacterByLines(s, c);
+        return s;
     }
 
     static Text.@Nullable IndexPair getTargetName(String context, int fromIndex, int toIndex, char trigger) {
