@@ -18,15 +18,14 @@ public final class Heditor {
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
             if (context.startsWith("class", i)) {
-                i += 5;
-                classDeclarationStartsAt = i;
+                classDeclarationStartsAt = i += 5;
             }
             else if (context.startsWith("/**", i)) {
-                if ((endOfJavadoc = context.indexOf("*/", i + 3)) < 0) break;
-                javadocBuffer = context.substring(i + 3, endOfJavadoc);
+                if ((endOfJavadoc = context.indexOf("*/", i += 3)) < 0) break;
+                javadocBuffer = context.substring(i, endOfJavadoc);
                 i = endOfJavadoc;
             }
-            else if ((c == '{' || c == '=') && javadocBuffer != null) {
+            else if (javadocBuffer != null && (c == '{' || c == '=')) {
                 Text.IndexPair indexPair;
                 if (classDeclarationStartsAt > 0) {
                     if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
@@ -42,32 +41,39 @@ public final class Heditor {
         return skeleton;
     };
 
-    // FixMe: 需要通过缩进判断层级关系
+    // FixMe: record indentation info in skeleton, should be implemented using a subclass of skeleton
     public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
         Skeleton currentBranch = skeleton;
-        int classDeclarationStartsAt = -1, functionDeclarationStartsAt = -1;
-        Text.IndexPair indexPair = null;
+        String lineSeparator = System.lineSeparator();
+        int lastIndentation = 0, currentIndentation = 0, declarationStartsAt = -1;
+        boolean newLine = false, declarationIsClass = true;
         for (int i = 0; i < context.length(); i++) {
-            if (context.startsWith("class", i)) {
-                i += 5;
-                classDeclarationStartsAt = i;
-            } else if (context.startsWith("def", i)) {
-                i += 3;
-                functionDeclarationStartsAt = i;
-            } else if (context.charAt(i) == ':') {
-                indexPair = null;
-                if (classDeclarationStartsAt > 0) indexPair = Utils.getClassName(context, classDeclarationStartsAt, i);
-                if (indexPair == null && functionDeclarationStartsAt > 0) indexPair = Utils.getMethodName(context, functionDeclarationStartsAt, i);
-                Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
-                currentBranch.appendChild(newSkeleton);
-                currentBranch = newSkeleton;
-            } else if (indexPair != null && context.startsWith("\"\"\"", i)) {
-                int endOfDocstring;
-                if ((endOfDocstring = context.indexOf("\"\"\"", i + 3)) < 0) break;
-                currentBranch.setComponent(Utils.text2component(styler.transform(currentBranch, Utils.removeRedundantCharactersByLines(context.substring(i + 3, endOfDocstring), ' '), type), type));
-                indexPair = null;
-                classDeclarationStartsAt = functionDeclarationStartsAt = -1;
-                i = endOfDocstring;
+            char c = context.charAt(i);
+            if (context.startsWith(lineSeparator, i)) {
+                currentIndentation = 0;
+                newLine = true;
+            }
+            if (newLine) {
+                if (c == ' ') currentIndentation++;
+                else newLine = false;
+            } else {
+                if (c == ':' && declarationStartsAt > 0) {
+                    Text.IndexPair indexPair = declarationIsClass ? Utils.getClassName(context, declarationStartsAt, i) : Utils.getMethodName(context, declarationStartsAt, i);
+                    if (indexPair == null) {
+                        declarationStartsAt = -1;
+                        continue;
+                    }
+                    Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
+                    lastIndentation = currentIndentation;
+                }
+                else if (context.startsWith("class", i)) {
+                    declarationStartsAt = i += 5;
+                    declarationIsClass = true;
+                }
+                else if (context.startsWith("def", i)) {
+                    declarationStartsAt = i += 3;
+                    declarationIsClass = false;
+                }
             }
         }
         return skeleton;
