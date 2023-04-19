@@ -66,8 +66,11 @@ public final class Heditor {
                     if (currentIndentation < currentBranch.getIndentation()) {
                         PythonTarget parent = currentBranch.getParent();
                         while (parent != null) {
-                            if (currentIndentation == parent.getIndentation()) currentBranch = parent;
-                            else parent = parent.getParent();
+                            if (currentIndentation == parent.getIndentation()) {
+                                currentBranch = parent;
+                                break;
+                            }
+                            parent = parent.getParent();
                         }
                     }
                 }
