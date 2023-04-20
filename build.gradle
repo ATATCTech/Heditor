@@ -1,6 +1,5 @@
 plugins {
     id 'java'
-    id 'org.graalvm.buildtools.native' version '0.9.21'
 }
 
 group 'com.atatctech'
@@ -15,24 +14,10 @@ dependencies {
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
     implementation 'com.atatctech:hephaestus:1.0.1b5'
     implementation 'org.jetbrains:annotations:24.0.1'
-    implementation 'org.graalvm.buildtools:native-gradle-plugin:0.9.21'
 }
 
 test {
     useJUnitPlatform()
-}
-
-graalvmNative {
-    toolchainDetection = true
-    binaries {
-        main {
-            javaLauncher = javaToolchains.launcherFor {
-                languageVersion = JavaLanguageVersion.of(19)
-            }
-            imageName = "heditor"
-            mainClass = "com.atatctech.heditor.Heditor"
-        }
-    }
 }
 
 jar {
