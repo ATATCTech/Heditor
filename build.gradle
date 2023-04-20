@@ -28,8 +28,9 @@ graalvmNative {
         main {
             javaLauncher = javaToolchains.launcherFor {
                 languageVersion = JavaLanguageVersion.of(19)
-                vendor = JvmVendorSpec.matching("Oracle Corporation")
             }
+            imageName = "heditor"
+            mainClass = "com.atatctech.heditor.Heditor"
         }
     }
 }
