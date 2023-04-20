@@ -22,6 +22,18 @@ test {
     useJUnitPlatform()
 }
 
+graalvmNative {
+    toolchainDetection = true
+    binaries {
+        main {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(19)
+                vendor = JvmVendorSpec.matching("Oracle Corporation")
+            }
+        }
+    }
+}
+
 jar {
     manifest {
         attributes 'Main-Class': 'com.atatctech.heditor.Heditor'
