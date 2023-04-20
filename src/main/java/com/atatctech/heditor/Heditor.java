@@ -3,7 +3,9 @@ package com.atatctech.heditor;
 import com.atatctech.heditor.pattern.CommentExtractor;
 import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
+import com.atatctech.hephaestus.Hephaestus;
 import com.atatctech.hephaestus.component.*;
+import com.atatctech.hephaestus.export.fs.ComponentFile;
 import com.atatctech.hephaestus.export.fs.ComponentFolder;
 import com.atatctech.packages.basics.Basics;
 
@@ -79,7 +81,7 @@ public final class Heditor {
                 if (c == ':' && declarationStartsAt > 0) {
                     Text.IndexPair indexPair = declarationIsClass ? Utils.getClassName(context, declarationStartsAt, i) : Utils.getMethodName(context, declarationStartsAt, i);
                     if (indexPair != null) {
-                        PythonTarget newSkeleton = new PythonTarget(context.substring(indexPair.start(), indexPair.end()));
+                        PythonTarget newSkeleton = new PythonTarget(context.substring(indexPair.start(), indexPair.end()) + (declarationIsClass ? "" : "()"));
                         currentBranch.appendChild(newSkeleton);
                         currentBranch = newSkeleton;
                         indentationDetectionRequested = true;
@@ -101,6 +103,11 @@ public final class Heditor {
         return skeleton;
     };
 
+    private static final String OUTPUT_PATH_EXPLANATION = """
+            path to output
+                    By filling this argument, Heditor will save the result into a file.
+                    If path ends with ".hexpr", the result will be saved in form of Hexpr.
+                    If not, the result will be unpacked into directories and files.""";
     private static final String HELP_TEXT = """
             extract [language] [target]
                     (--type=[comment type])
@@ -113,16 +120,20 @@ public final class Heditor {
                     html -> HTML
                     p -> plain text
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
-                output path: path to output
-                    By filling this argument, Heditor will save the result into a file.
-                    If path ends with ".hexpr", the result will be saved in form of Hexpr.
-                    If not, the result will be unpacked into directories and files.
-            """;
+                output path: /OUTPUT_PATH_EXPLANATION/
+                
+            read _ [target]
+                 (--wrapperfile=[custom wrapper file])
+                 ([output path])
+                target: path to the target file
+                custom wrapper file: path to the wrapper file, `.wrapper` by default
+                output path: /OUTPUT_PATH_EXPLANATION/
+            """.replaceAll("/OUTPUT_PATH_EXPLANATION/", OUTPUT_PATH_EXPLANATION);
 
     public static void main(String[] args) {
         try {
             int lengthOfArgs = args.length;
-            if (lengthOfArgs < 2) {
+            if (lengthOfArgs < 3) {
                 if (args[0].equals("help")) {
                     System.out.println(HELP_TEXT);
                     return;
@@ -130,18 +141,17 @@ public final class Heditor {
                 throw new IllegalArgumentException("Must have at least 3 arguments.");
             }
             String command = args[0].toLowerCase();
-            File file = new File(args[2]);
             String language = args[1].toLowerCase();
-            CommentExtractor commentExtractor;
+            File target = new File(args[2]);
             Type type = Type.MARKDOWN;
             Styler styler = new Styler();
             File outputFile = null;
             File wrapperFile = null;
-            switch (language) {
-                case "java" -> commentExtractor = JAVA;
-                case "python" -> commentExtractor = PYTHON;
-                default -> throw new IllegalStateException("Unexpected language: \"" + language + "\".");
-            }
+            CommentExtractor commentExtractor = switch (language) {
+                case "java" -> JAVA;
+                case "python" -> PYTHON;
+                default -> null;
+            };
             for (int i = 3; i < lengthOfArgs; i++) {
                 String arg = args[i];
                 if (arg.startsWith("--type=")) {
@@ -183,13 +193,29 @@ public final class Heditor {
             }
             switch (command) {
                 case "extract" -> {
-                    Skeleton skeleton = Utils.extract(file, commentExtractor, type, styler);
+                    Skeleton skeleton = Utils.extract(target, commentExtractor, type, styler);
                     if (outputFile == null) System.out.println(skeleton);
                     else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
                     else
                         (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write(outputFile + "/" + skeleton.getName());
+                    // Todo: Supports in Hephaestus 1.0.1b6
+                    // Hephaestus.exportToFS(skeleton, outputFile + "/" + skeleton.getName(), wrapperFile);
                 }
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
+                case "read" -> {
+                    Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : (target.isDirectory() ? ComponentFolder.read(target) : ComponentFile.read(target)).component();
+                    // Todo: Supports in Hephaestus 1.0.1b6
+                    // Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
+                    if (component == null) throw new RuntimeException("Failed to read file: " + target.getAbsolutePath());
+                    if (outputFile == null) System.out.println(component);
+                    else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, component.expr());
+                    else {
+                        if (component instanceof WrapperComponent wrapperComponent) new ComponentFolder(wrapperComponent).write(outputFile);
+                        else new ComponentFile(component).write(outputFile);
+                    }
+                    // Todo: Supports in Hephaestus 1.0.1b6
+                    // else Hephaestus.export(component, outputFile);
+                }
                 default -> System.out.println("WARNING: Unrecognized command: `" + command + "`.");
             }
         } catch (Exception e) {
