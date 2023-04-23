@@ -12,7 +12,7 @@ repositories {
 dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.9.2'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
-    implementation 'com.atatctech:hephaestus:1.0.1b5'
+    implementation 'com.atatctech:hephaestus:1.0.1b6'
     implementation 'org.jetbrains:annotations:24.0.1'
 }
 

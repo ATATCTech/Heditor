@@ -5,8 +5,6 @@ import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
 import com.atatctech.hephaestus.Hephaestus;
 import com.atatctech.hephaestus.component.*;
-import com.atatctech.hephaestus.export.fs.ComponentFile;
-import com.atatctech.hephaestus.export.fs.ComponentFolder;
 import com.atatctech.packages.basics.Basics;
 
 import java.io.File;
@@ -196,25 +194,15 @@ public final class Heditor {
                     Skeleton skeleton = Utils.extract(target, commentExtractor, type, styler);
                     if (outputFile == null) System.out.println(skeleton);
                     else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
-                    else
-                        (wrapperFile == null ? new ComponentFolder(skeleton) : new ComponentFolder(skeleton, wrapperFile)).write(outputFile + "/" + skeleton.getName());
-                    // Todo: Supports in Hephaestus 1.0.1b6
-                    // Hephaestus.exportToFS(skeleton, outputFile + "/" + skeleton.getName(), wrapperFile);
+                    else Hephaestus.exportToFS(skeleton, outputFile + "/" + skeleton.getName(), wrapperFile);
                 }
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
                 case "read" -> {
-                    Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : (target.isDirectory() ? ComponentFolder.read(target) : ComponentFile.read(target)).component();
-                    // Todo: Supports in Hephaestus 1.0.1b6
-                    // Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
+                     Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
                     if (component == null) throw new RuntimeException("Failed to read file: " + target.getAbsolutePath());
                     if (outputFile == null) System.out.println(component);
                     else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, component.expr());
-                    else {
-                        if (component instanceof WrapperComponent wrapperComponent) new ComponentFolder(wrapperComponent).write(outputFile);
-                        else new ComponentFile(component).write(outputFile);
-                    }
-                    // Todo: Supports in Hephaestus 1.0.1b6
-                    // else Hephaestus.export(component, outputFile);
+                    else Hephaestus.exportToFS(component, outputFile);
                 }
                 default -> System.out.println("WARNING: Unrecognized command: `" + command + "`.");
             }
