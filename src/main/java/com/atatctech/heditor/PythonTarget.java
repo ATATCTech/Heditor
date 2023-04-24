@@ -5,6 +5,8 @@ import com.atatctech.hephaestus.component.Skeleton;
 public class PythonTarget extends Skeleton {
     protected int indentation = 0;
 
+    public PythonTarget() {}
+
     public PythonTarget(Skeleton skeleton) {
         setId(skeleton.getId());
         setName(skeleton.getName());
