@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.5" transformSequenceNumber="10">
   <directoryPresets config="Heditor-1.0.0.jar" />
-  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="executables" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0" macVolumeId="e9ad3067afe57a49">
+  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="executables" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0" macVolumeId="e9ad3067afe57a49" javaMinVersion="19">
     <jreBundles jdkProviderId="Corretto" release="19/latest" />
   </application>
   <files>
@@ -496,11 +496,11 @@ return console.askYesNo(message, true);
   </installerGui>
   <mediaSets>
     <windows name="Windows" id="35" architecture="64" />
-    <macosFolderArchive name="macOS Folder Archive (Intel)" id="41" />
-    <macosFolderArchive name="macOS Folder Archive (ARM)" id="43" architecture="aarch64" />
+    <macosFolderArchive name="macOS Folder Archive (Universal)" id="41" architecture="universal" />
     <linuxRPM name="Linux RPM" id="45" />
     <linuxDeb name="Linux Deb Archive" id="46" />
     <windowsArchive name="Windows Archive" id="48" architecture="64" />
+    <unixArchive name="Unix Archive" id="49" />
   </mediaSets>
   <buildIds>
     <mediaSet refId="35" />
