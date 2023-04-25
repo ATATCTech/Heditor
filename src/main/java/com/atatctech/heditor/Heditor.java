@@ -5,9 +5,12 @@ import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
 import com.atatctech.hephaestus.Hephaestus;
 import com.atatctech.hephaestus.component.*;
+import com.atatctech.hephaestus.exception.HephaestusException;
+import com.atatctech.hephaestus.export.fs.ComponentFile;
 import com.atatctech.packages.basics.Basics;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Objects;
 
 public final class Heditor {
@@ -112,7 +115,7 @@ public final class Heditor {
                     (--wrapperfile=[custom wrapper file])
                     ([output path])
                 language: Java | Python
-                target: path to the target file
+                target: /TARGET_EXPLANATION/
                 comment type:
                     md -> Markdown  *DEFAULT
                     html -> HTML
@@ -123,10 +126,25 @@ public final class Heditor {
             read _ [target]
                  (--wrapperfile=[custom wrapper file])
                  ([output path])
-                target: path to the target file
+                target: /TARGET_EXPLANATION/
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
                 output path: /OUTPUT_PATH_EXPLANATION/
-            """.replaceAll("/OUTPUT_PATH_EXPLANATION/", OUTPUT_PATH_EXPLANATION);
+                
+            initialize _ [target]
+                       ([output path])
+                target: /TARGET_EXPLANATION/
+                output path: /OUTPUT_PATH_EXPLANATION/
+            """.replaceAll("/TARGET_EXPLANATION/", "path to the target file").replaceAll("/OUTPUT_PATH_EXPLANATION/", OUTPUT_PATH_EXPLANATION);
+
+    public static Component initializeFromFS(File target) throws HephaestusException, IOException, ClassNotFoundException {
+        return (target.isDirectory() ? InitialBuilder.read(target) : ComponentFile.read(target)).component();
+    }
+
+    public static void output(Component component, File outputFile) {
+        if (outputFile == null) System.out.println(component);
+        else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, component.expr());
+        else Hephaestus.exportToFS(component, outputFile);
+    }
 
     public static void main(String[] args) {
         try {
@@ -190,20 +208,14 @@ public final class Heditor {
                 }
             }
             switch (command) {
-                case "extract" -> {
-                    Skeleton skeleton = Utils.extract(target, commentExtractor, type, styler);
-                    if (outputFile == null) System.out.println(skeleton);
-                    else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, skeleton.expr());
-                    else Hephaestus.exportToFS(skeleton, outputFile + "/" + skeleton.getName(), wrapperFile);
-                }
+                case "extract" -> output(Utils.extract(target, commentExtractor, type, styler), outputFile);
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
                 case "read" -> {
-                     Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
+                    Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
                     if (component == null) throw new RuntimeException("Failed to read file: " + target.getAbsolutePath());
-                    if (outputFile == null) System.out.println(component);
-                    else if (outputFile.getName().endsWith(".hexpr")) Basics.NativeHandler.writeFile(outputFile, component.expr());
-                    else Hephaestus.exportToFS(component, outputFile);
+                    output(component, outputFile);
                 }
+                case "initialize" -> output(initializeFromFS(target), outputFile);
                 default -> System.out.println("WARNING: Unrecognized command: `" + command + "`.");
             }
         } catch (Exception e) {
