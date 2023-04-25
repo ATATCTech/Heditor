@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.5" transformSequenceNumber="10">
   <directoryPresets config="Heditor-1.0.0.jar" />
-  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="C:/Users/futer/Downloads/Heditor" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0" macVolumeId="e9ad3067afe57a49">
+  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="executables" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0" macVolumeId="e9ad3067afe57a49">
     <jreBundles jdkProviderId="Corretto" release="19/latest" />
   </application>
   <files>
