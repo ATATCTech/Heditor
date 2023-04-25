@@ -149,6 +149,7 @@ public final class Heditor {
     public static void main(String[] args) {
         try {
             int lengthOfArgs = args.length;
+            if (lengthOfArgs < 1) throw new IllegalArgumentException();
             if (lengthOfArgs < 3) {
                 if (args[0].equals("help")) {
                     System.out.println(HELP_TEXT);
@@ -221,7 +222,6 @@ public final class Heditor {
         } catch (Exception e) {
             System.out.println("ERROR: " + e);
             System.out.println("Use `heditor help` to learn more.");
-            throw new RuntimeException(e);
         }
     }
 }
