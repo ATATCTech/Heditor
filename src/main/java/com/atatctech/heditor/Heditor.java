@@ -96,6 +96,7 @@ public final class Heditor {
                     declarationIsClass = false;
                 } else if (context.startsWith("\"\"\"", i)) {
                     int docstringEndsAt = context.indexOf("\"\"\"", i += 3);
+                    if (docstringEndsAt < 0) break;
                     currentBranch.setComponent(Utils.text2component(styler.transform(currentBranch, Utils.removeRedundantCharactersByLines(context.substring(i, docstringEndsAt), ' '), type), type));
                     i = docstringEndsAt;
                 }
@@ -110,10 +111,10 @@ public final class Heditor {
                     If path ends with ".hexpr", the result will be saved in form of Hexpr.
                     If not, the result will be unpacked into directories and files.""";
     private static final String HELP_TEXT = """
-            extract [language] [target]
-                    (--type=[comment type])
-                    (--wrapperfile=[custom wrapper file])
-                    ([output path])
+            extract {language} {target}
+                    (--type={comment type})
+                    (--wrapperfile={custom wrapper file})
+                    ({output path})
                 language: Java | Python
                 target: /TARGET_EXPLANATION/
                 comment type:
@@ -123,15 +124,15 @@ public final class Heditor {
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
                 output path: /OUTPUT_PATH_EXPLANATION/
                 
-            read _ [target]
-                 (--wrapperfile=[custom wrapper file])
-                 ([output path])
+            read _ {target}
+                 (--wrapperfile={custom wrapper file})
+                 ({output path})
                 target: /TARGET_EXPLANATION/
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
                 output path: /OUTPUT_PATH_EXPLANATION/
                 
-            initialize _ [target]
-                       ([output path])
+            initialize _ {target}
+                       ({output path})
                 target: /TARGET_EXPLANATION/
                 output path: /OUTPUT_PATH_EXPLANATION/
             """.replaceAll("/TARGET_EXPLANATION/", "path to the target file").replaceAll("/OUTPUT_PATH_EXPLANATION/", OUTPUT_PATH_EXPLANATION);
@@ -147,6 +148,7 @@ public final class Heditor {
     }
 
     public static void main(String[] args) {
+        boolean debug = false;
         try {
             int lengthOfArgs = args.length;
             if (lengthOfArgs < 1) throw new IllegalArgumentException();
@@ -171,7 +173,8 @@ public final class Heditor {
             };
             for (int i = 3; i < lengthOfArgs; i++) {
                 String arg = args[i];
-                if (arg.startsWith("--type=")) {
+                if (arg.equals("--debug")) debug = true;
+                else if (arg.startsWith("--type=")) {
                     String typeString = arg.substring(7);
                     type = switch (typeString) {
                         case "md" -> Type.MARKDOWN;
@@ -222,6 +225,7 @@ public final class Heditor {
         } catch (Exception e) {
             System.out.println("ERROR: " + e);
             System.out.println("Use `heditor help` to learn more.");
+            if (debug) throw new RuntimeException(e);
         }
     }
 }
