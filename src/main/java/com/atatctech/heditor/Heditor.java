@@ -20,20 +20,18 @@ public final class Heditor {
         String javadocBuffer = null;
         for (int i = 0; i < context.length(); i++) {
             char c = context.charAt(i);
-            if (context.startsWith("class", i)) {
-                classDeclarationStartsAt = i += 5;
-            }
+            if (context.startsWith("class", i)) classDeclarationStartsAt = i += 5;
             else if (context.startsWith("/**", i)) {
                 if ((JavadocEndsAt = context.indexOf("*/", i += 3)) < 0) break;
                 javadocBuffer = context.substring(i, JavadocEndsAt);
                 i = JavadocEndsAt;
-            }
-            else if (javadocBuffer != null && (c == '{' || c == '=')) {
+            } else if (javadocBuffer != null && (c == '{' || c == '=')) {
                 Text.IndexPair indexPair;
                 if (classDeclarationStartsAt > 0) {
                     if ((indexPair = Utils.getClassName(context, classDeclarationStartsAt)) == null) break;
                     classDeclarationStartsAt = -1;
-                } else if ((indexPair = Utils.getMethodName(context, JavadocEndsAt, i)) == null && (indexPair = Utils.getFieldName(context, JavadocEndsAt, i + 1)) == null) continue;
+                } else if ((indexPair = Utils.getMethodName(context, JavadocEndsAt, i)) == null && (indexPair = Utils.getFieldName(context, JavadocEndsAt, i + 1)) == null)
+                    continue;
                 Skeleton newSkeleton = new Skeleton(context.substring(indexPair.start(), indexPair.end()));
                 newSkeleton.setComponent(Utils.text2component(styler.transform(newSkeleton, Utils.removeRedundantCharactersByLines(javadocBuffer, '*', ' '), type), type));
                 currentBranch.appendChild(newSkeleton);
@@ -190,8 +188,8 @@ public final class Heditor {
                             @Override
                             public Text transform(Skeleton currentContainer, String comment, Type type) {
                                 return super.transform(currentContainer, comment
-                                        .replaceAll("@param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
-                                        .replaceAll("@return", "<b style='font-size:10px;color:green;'>RETURN</b>")
+                                                .replaceAll("@param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
+                                                .replaceAll("@return", "<b style='font-size:10px;color:green;'>RETURN</b>")
                                         , type);
                             }
                         };
@@ -199,8 +197,8 @@ public final class Heditor {
                             @Override
                             public Text transform(Skeleton currentContainer, String comment, Type type) {
                                 return super.transform(currentContainer, comment
-                                        .replaceAll(":param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
-                                        .replaceAll(":return", "<b style='font-size:10px;color:green;'>RETURN</b>")
+                                                .replaceAll(":param", "<b style='font-size:10px;color:orange;'>PARAM</b>")
+                                                .replaceAll(":return", "<b style='font-size:10px;color:green;'>RETURN</b>")
                                         , type);
                             }
                         };
@@ -216,7 +214,8 @@ public final class Heditor {
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
                 case "read" -> {
                     Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
-                    if (component == null) throw new RuntimeException("Failed to read file: " + target.getAbsolutePath());
+                    if (component == null)
+                        throw new RuntimeException("Failed to read file: " + target.getAbsolutePath());
                     output(component, outputFile);
                 }
                 case "initialize" -> output(initializeFromFS(target), outputFile);
