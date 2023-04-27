@@ -109,10 +109,11 @@ public final class Heditor {
                     If path ends with ".hexpr", the result will be saved in form of Hexpr.
                     If not, the result will be unpacked into directories and files.""";
     private static final String HELP_TEXT = """
-            extract {language} {target}
-                    (--type={comment type})
+            extract {target}
+                    (in {language})
+                    (as {comment type})
                     (--wrapperfile={custom wrapper file})
-                    ({output path})
+                    (to {output path})
                 language: Java | Python
                 target: /TARGET_EXPLANATION/
                 comment type:
@@ -122,15 +123,15 @@ public final class Heditor {
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
                 output path: /OUTPUT_PATH_EXPLANATION/
                 
-            read _ {target}
+            read {target}
                  (--wrapperfile={custom wrapper file})
-                 ({output path})
+                 (to {output path})
                 target: /TARGET_EXPLANATION/
                 custom wrapper file: path to the wrapper file, `.wrapper` by default
                 output path: /OUTPUT_PATH_EXPLANATION/
                 
-            initialize _ {target}
-                       ({output path})
+            initialize {target}
+                       (to {output path})
                 target: /TARGET_EXPLANATION/
                 output path: /OUTPUT_PATH_EXPLANATION/
             """.replaceAll("/TARGET_EXPLANATION/", "path to the target file").replaceAll("/OUTPUT_PATH_EXPLANATION/", OUTPUT_PATH_EXPLANATION);
@@ -150,35 +151,31 @@ public final class Heditor {
         try {
             int lengthOfArgs = args.length;
             if (lengthOfArgs < 1) throw new IllegalArgumentException();
-            if (lengthOfArgs < 3) {
+            if (lengthOfArgs < 2) {
                 if (args[0].equals("help")) {
                     System.out.println(HELP_TEXT);
                     return;
                 }
-                throw new IllegalArgumentException("Must have at least 3 arguments.");
+                throw new IllegalArgumentException("Must have at least 2 arguments.");
             }
             String command = args[0].toLowerCase();
-            String language = args[1].toLowerCase();
-            File target = new File(args[2]);
+            String language = "";
+            File target = new File(args[1]);
             Type type = Type.MARKDOWN;
             Styler styler = new Styler();
             File outputFile = null;
             File wrapperFile = null;
-            Extractor extractor = switch (language) {
-                case "java" -> JAVA;
-                case "python" -> PYTHON;
-                default -> null;
-            };
-            for (int i = 3; i < lengthOfArgs; i++) {
+            for (int i = 2; i < lengthOfArgs; i++) {
                 String arg = args[i];
                 if (arg.equals("--debug")) debug = true;
-                else if (arg.startsWith("--type=")) {
-                    String typeString = arg.substring(7);
+                else if (arg.equals("in")) language = args[++i].toLowerCase();
+                else if (arg.equals("as")) {
+                    String typeString = args[++i].toLowerCase();
                     type = switch (typeString) {
                         case "md" -> Type.MARKDOWN;
                         case "html" -> Type.HTML;
                         case "p" -> Type.PLAIN_TEXT;
-                        default -> throw new IllegalStateException("Unknown type: \"" + typeString + "\".");
+                        default -> throw new IllegalArgumentException("Unknown type: \"" + typeString + "\".");
                     };
                 } else if (arg.startsWith("--wrapperfile=")) {
                     wrapperFile = new File(arg.substring(14));
@@ -205,10 +202,13 @@ public final class Heditor {
                         default ->
                                 throw new IllegalStateException("Unexpected value: " + Integer.valueOf(arg.substring(9)));
                     };
-                } else {
-                    outputFile = new File(arg);
-                }
+                } else if (arg.equals("to")) outputFile = new File(args[++i]);
             }
+            Extractor extractor = switch (language) {
+                case "java" -> JAVA;
+                case "python" -> PYTHON;
+                default -> null;
+            };
             switch (command) {
                 case "extract" -> output(Utils.extract(target, extractor, type, styler), outputFile);
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
@@ -223,7 +223,7 @@ public final class Heditor {
             }
         } catch (Exception e) {
             System.out.println("ERROR: " + e);
-            System.out.println("Use `heditor help` to learn more.");
+            System.out.println("Use `heditor help` to learn more or append `--debug` to enable debugging.");
             if (debug) throw new RuntimeException(e);
         }
     }
