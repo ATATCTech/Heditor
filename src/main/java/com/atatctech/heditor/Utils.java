@@ -2,7 +2,7 @@ package com.atatctech.heditor;
 
 import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
-import com.atatctech.heditor.pattern.CommentExtractor;
+import com.atatctech.heditor.pattern.Extractor;
 import com.atatctech.hephaestus.component.*;
 import com.atatctech.packages.basics.Basics;
 import org.jetbrains.annotations.NotNull;
@@ -84,14 +84,14 @@ public final class Utils {
         return getClassName(context, fromIndex, context.length());
     }
 
-    public static Skeleton extract(@NotNull File file, CommentExtractor commentExtractor, Type type, Styler styler) throws IOException {
+    public static Skeleton extract(@NotNull File file, Extractor extractor, Type type, Styler styler) throws IOException {
         if (file.isDirectory()) {
             Skeleton skeleton = new Skeleton(file.getName());
             File[] children = file.listFiles();
-            if (children != null) for (File subFile : children) skeleton.appendChild(extract(subFile, commentExtractor, type, styler));
+            if (children != null) for (File subFile : children) skeleton.appendChild(extract(subFile, extractor, type, styler));
             return skeleton;
         }
         String content = Basics.NativeHandler.readFile(file);
-        return commentExtractor.extract(new Skeleton(file.getName()), content, type, styler);
+        return extractor.extract(new Skeleton(file.getName()), content, type, styler);
     }
 }

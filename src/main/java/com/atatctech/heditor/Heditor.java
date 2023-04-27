@@ -1,6 +1,6 @@
 package com.atatctech.heditor;
 
-import com.atatctech.heditor.pattern.CommentExtractor;
+import com.atatctech.heditor.pattern.Extractor;
 import com.atatctech.heditor.pattern.Styler;
 import com.atatctech.heditor.pattern.Type;
 import com.atatctech.hephaestus.Hephaestus;
@@ -14,7 +14,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public final class Heditor {
-    public static final CommentExtractor JAVA = (skeleton, context, type, styler) -> {
+    public static final Extractor JAVA = (skeleton, context, type, styler) -> {
         Skeleton currentBranch = skeleton;
         int classDeclarationStartsAt = -1, JavadocEndsAt = -1;
         String javadocBuffer = null;
@@ -42,7 +42,7 @@ public final class Heditor {
         return skeleton;
     };
 
-    public static final CommentExtractor PYTHON = (skeleton, context, type, styler) -> {
+    public static final Extractor PYTHON = (skeleton, context, type, styler) -> {
         PythonTarget currentBranch = new PythonTarget(skeleton);
         skeleton = currentBranch;
         String lineSeparator = System.lineSeparator();
@@ -164,7 +164,7 @@ public final class Heditor {
             Styler styler = new Styler();
             File outputFile = null;
             File wrapperFile = null;
-            CommentExtractor commentExtractor = switch (language) {
+            Extractor extractor = switch (language) {
                 case "java" -> JAVA;
                 case "python" -> PYTHON;
                 default -> null;
@@ -210,7 +210,7 @@ public final class Heditor {
                 }
             }
             switch (command) {
-                case "extract" -> output(Utils.extract(target, commentExtractor, type, styler), outputFile);
+                case "extract" -> output(Utils.extract(target, extractor, type, styler), outputFile);
                 case "inject" -> throw new UnsupportedOperationException("Injection not supported yet.");
                 case "read" -> {
                     Component component = target.getName().endsWith(".hexpr") ? Hephaestus.parse(Basics.NativeHandler.readFile(target)) : Hephaestus.importFromFS(target, wrapperFile);
