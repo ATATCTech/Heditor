@@ -497,11 +497,12 @@ return console.askYesNo(message, true);
   </installerGui>
   <mediaSets>
     <windows name="Windows" id="35" architecture="64" />
-    <macosFolderArchive name="macOS Folder Archive (Universal)" id="41" architecture="universal" />
+    <macosFolderArchive name="macOS Folder Archive (ARM)" id="41" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_ARM" architecture="aarch64" />
     <linuxRPM name="Linux RPM" id="45" />
     <linuxDeb name="Linux Deb Archive" id="46" />
     <windowsArchive name="Windows Archive" id="48" architecture="64" />
     <unixArchive name="Unix Archive" id="49" />
+    <macosFolderArchive name="macOS Folder Archive" id="51" mediaFileName="${compiler:sys.shortName}_${compiler:sys.platform}_${compiler:sys.version}_Intel" />
   </mediaSets>
   <buildIds>
     <mediaSet refId="35" />
