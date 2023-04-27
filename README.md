@@ -44,6 +44,6 @@ heditor read _ example.hexpr
 
 ### Debug
 
-Add --debug anywhere after the third argument to enable debug mode. This gives you a full stack trace that indicates where the error occurs. Report the bug with the command leading to the error and the stack trace.
+Add `--debug` anywhere after the third argument to enable debug mode. This gives you a full stack trace that indicates where the error occurs. Report the bug with the command leading to the error and the stack trace.
 
 ## Issues
