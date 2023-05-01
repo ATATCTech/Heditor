@@ -22,7 +22,6 @@ public class PythonTarget extends Skeleton {
         setComponent(skeleton.getComponent());
         setParent(skeleton.getParent());
         setChildren(skeleton.getChildren());
-        setStyle(skeleton.getStyle());
     }
 
     public PythonTarget(String name) {
