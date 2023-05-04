@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <install4j version="10.0.5" transformSequenceNumber="10">
-  <directoryPresets config="Heditor-1.0.0.jar" />
-  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="executables" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0" macVolumeId="e9ad3067afe57a49" javaMinVersion="19">
+  <directoryPresets config="F:/Projects/Projects/Hephaestus/Heditor/production/Heditor-1.0.1b0.jar" />
+  <application name="Heditor" applicationId="7629-6633-7812-5412" mediaDir="executables" shortName="heditor" publisher="ATATC Tech" publisherWeb="https://arrow.atatctech.com" version="1.0.0b0" macVolumeId="e9ad3067afe57a49" javaMinVersion="19">
     <codeSigning windowsKeySource="windows" />
     <jreBundles jdkProviderId="Corretto" release="19/latest" />
   </application>
@@ -10,7 +10,7 @@
       <mountPoint id="28" />
     </mountPoints>
     <entries>
-      <fileEntry mountPoint="28" file="Heditor-1.0.0.jar" />
+      <fileEntry mountPoint="28" file="Heditor-1.0.1b0.jar" />
     </entries>
   </files>
   <launchers>
@@ -18,7 +18,7 @@
       <executable name="heditor" redirectStderr="false" executableMode="console" changeWorkingDirectory="false" singleInstance="true" globalSingleInstance="true" />
       <java mainClass="com.atatctech.heditor.Heditor">
         <classPath>
-          <archive location="Heditor-1.0.0.jar" failOnError="false" />
+          <archive location="Heditor-1.0.1b0.jar" failOnError="false" />
         </classPath>
       </java>
     </launcher>
